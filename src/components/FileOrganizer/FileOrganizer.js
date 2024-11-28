@@ -13,7 +13,6 @@ const FileOrganizer = ({ files, setFiles }) => {
         const reorderedFiles = Array.from(files);
         const [movedItem] = reorderedFiles.splice(result.source.index, 1);
         reorderedFiles.splice(result.destination.index, 0, movedItem);
-        console.log(reorderedFiles);
         setFiles(reorderedFiles);
 
         try {

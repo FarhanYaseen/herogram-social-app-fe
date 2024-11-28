@@ -11,18 +11,13 @@ export const ALLOWED_FILE_TYPES = [
     'video/x-msvideo',
 ];
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const MAX_FILE_SIZE_MB = 25 * 1024 * 1024;
 
 export const validateFile = (file) => {
     if (!file) {
         return false;
     }
-
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        return false;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
         return false;
     }
 

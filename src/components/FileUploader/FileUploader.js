@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTokenContext } from '../../context/TokenContext';
 import { uploadFile } from '../../services/api';
-import { validateFile } from '../../utils/fileValidation';
+import { validateFile, MAX_FILE_SIZE_MB } from '../../utils/fileValidation';
 import './FileUploader.css';
 
 const FileUploader = ({ fetchFileList, setError }) => {
@@ -17,9 +17,17 @@ const FileUploader = ({ fetchFileList, setError }) => {
         setSelectedFile(null);
         setPreviewUrl('');
 
-        if (file && validateFile(file)) {
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+        if (file) {
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                setError(`File size exceeds the limit of ${MAX_FILE_SIZE_MB}MB.`);
+                return;
+            }
+            if (validateFile(file)) {
+                setSelectedFile(file);
+                setPreviewUrl(URL.createObjectURL(file));
+            } else {
+                setError('Invalid file type.');
+            }
         }
     };
 
@@ -46,10 +54,7 @@ const FileUploader = ({ fetchFileList, setError }) => {
 
         setIsLoading(true);
         try {
-           
-
             await uploadFile(selectedFile, trimmedTags.join(','), token);
-
             setSelectedFile(null);
             setTags('');
             setPreviewUrl('');
@@ -78,7 +83,11 @@ const FileUploader = ({ fetchFileList, setError }) => {
         <div className="upload-container">
             <h3>Upload File</h3>
             <div className="file-input-container">
-                <input type="file" onChange={handleFileChange} accept="image/*, video/*" disabled={isLoading} />
+                <input
+                    type="file"
+                    onChange={handleFileChange}
+                    disabled={isLoading}
+                />
                 {selectedFile && (
                     <div className="selected-file-info">
                         <p>Selected: {selectedFile.name}</p>
@@ -92,14 +101,31 @@ const FileUploader = ({ fetchFileList, setError }) => {
                     {selectedFile.type.startsWith('image/') ? (
                         <img src={previewUrl} alt="Preview" className="file-preview" />
                     ) : (
-                        <video src={previewUrl} type={selectedFile.type} controls className="file-preview" preload="metadata" />
+                        <video
+                            src={previewUrl}
+                            type={selectedFile.type}
+                            controls
+                            className="file-preview"
+                            preload="metadata"
+                        />
                     )}
                 </div>
             )}
-            <input type="text" placeholder="Tags (comma-separated)" value={tags} onChange={(e) => setTags(e.target.value)} disabled={isLoading} />
-            <button className="upload-button" onClick={handleFileUpload} disabled={!selectedFile || isLoading}>
+            <input
+                type="text"
+                placeholder="Tags (comma-separated)"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                disabled={isLoading}
+            />
+            <button
+                className="upload-button"
+                onClick={handleFileUpload}
+                disabled={!selectedFile || isLoading}
+            >
                 {isLoading ? 'Uploading...' : 'Upload'}
             </button>
+            {isLoading && <div className="loading-spinner">Uploading, please wait...</div>}
         </div>
     );
 };
